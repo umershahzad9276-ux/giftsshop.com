@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Premium Gift Cards</title>
+  <style>
+    /* Reset */
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #121212;
+      color: #eee;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 40px auto 60px;
+      padding: 0 15px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: 2.8rem;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, #bbb, #eee, #bbb);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: shine 4s linear infinite;
+    }
+    header p {
+      margin-top: 8px;
+      font-weight: 400;
+      color: #999;
+      font-size: 1.1rem;
+    }
+    @keyframes shine {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    /* Grid of cards */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit,minmax(230px,1fr));
+      gap: 22px;
+    }
+
+    /* Each card */
+    .card {
+      position: relative;
+      border-radius: 16px;
+      cursor: pointer;
+      overflow: hidden;
+      height: 320px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 18px 20px 28px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow:
+        0 2px 15px rgba(0,0,0,0.7);
+      border: 3px solid transparent;
+    }
+    .card:hover {
+      transform: translateY(-12px);
+      box-shadow:
+        0 8px 30px rgba(0, 175, 255, 0.9),
+        0 0 15px rgba(0, 175, 255, 0.7);
+      border-color: #00afff;
+      z-index: 10;
+    }
+
+    /* Card background overlays */
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      filter: brightness(0.6);
+      transition: filter 0.3s ease;
+      z-index: 0;
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+    }
+    .card:hover::before {
+      filter: brightness(0.8);
+    }
+
+    /* Card content */
+    .card-content {
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 8px rgba(0,0,0,0.8);
+    }
+    .card-content img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      margin-bottom: 14px;
+      filter: drop-shadow(0 0 3px #000);
+    }
+    .card-content h3 {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+    }
+    .card-content p {
+      font-size: 1.2rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Amounts popup */
+    #amounts-popup {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      user-select: none;
+    }
+    #amounts-popup.active {
+      display: flex;
+    }
+    #amounts-popup .popup-content {
+      background: #222;
+      border-radius: 18px;
+      padding: 30px 36px 36px;
+      width: 350px;
+      max-width: 95%;
+      box-shadow: 0 0 20px #00afff;
+      color: #e0f7ff;
+      text-align: center;
+    }
+    #amounts-popup h2 {
+      font-weight: 700;
+      margin-bottom: 22px;
+      font-size: 1.8rem;
+      user-select: text;
+    }
+    #amounts-popup .amount-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+    #amounts-popup button.amount-btn {
+      background: #333;
+      border-radius: 12px;
+      padding: 14px 0;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: #00bbff;
+      border: 2px solid transparent;
+      transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+    #amounts-popup button.amount-btn:hover,
+    #amounts-popup button.amount-btn.selected {
+      background: #00bbff;
+      border-color: #00eeff;
+      color: #121212;
+      box-shadow:
+        0 0 18px #00eeff,
+        0 0 30px #00ccff;
+    }
+
+    #amounts-popup button#claim-btn {
+      background: #0088cc;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 14px;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #e0f7ff;
+      cursor: pointer;
+      user-select: none;
+      box-shadow:
+        0 0 15px #00aaff,
+        inset 0 0 10px #0099cc;
+      transition: background 0.3s ease;
+    }
+    #amounts-popup button#claim-btn:disabled {
+      background: #444;
+      cursor: not-allowed;
+      box-shadow: none;
+      color: #777;
+    }
+    #amounts-popup button#claim-btn:not(:disabled):hover {
+      background: #00bbff;
+      box-shadow:
+        0 0 22px #00ddff,
+        inset 0 0 16px #00ccff;
+    }
+
+    #amounts-popup button#close-btn {
+      margin-top: 18px;
+      background: #444;
+      color: #ccc;
+      padding: 10px 20px;
+      font-weight: 600;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      user-select: none;
+    }
+    #amounts-popup button#close-btn:hover {
+      background: #666;
+      color: #fff;
+    }
+
+    /* Code display */
+    #generated-code {
+      font-family: monospace;
+      font-weight: 700;
+      font-size: 1.6rem;
+      letter-spacing: 5px;
+      margin-top: 14px;
+      user-select: all;
+      color: #33ccff;
+      filter: blur(6px);
+      transition: filter 0.5s ease;
+    }
+    #generated-code.blur {
+      filter: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 460px) {
+      .cards-grid {
+        grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+      }
+      .card {
+        height: 299px;
+      }
+      #amounts-popup .popup-content {
+        width: 90%;
+      }
+      #amounts-popup .amount-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Premium Free Gift Cards</h1>
+      <p>Choose your gift card and claim your reward!</p>
+    </header>
+
+    <section class="cards-grid" id="cards-container" aria-label="Gift Cards List">
+      <!-- Cards injected by JS -->
+    </section>
+  </div>
+
+  <!-- Amounts popup -->
+  <div id="amounts-popup" role="dialog" aria-modal="true" aria-labelledby="popup-title" tabindex="-1">
+    <div class="popup-content">
+      <h2 id="popup-title">Select Amount</h2>
+      <div class="amount-buttons" id="amount-buttons">
+        <!-- Amount buttons injected by JS -->
+      </div>
+      <button id="claim-btn" disabled>Claim Code</button>
+      <div id="generated-code" aria-live="polite" role="alert" style="display:none;"></div>
+      <button id="close-btn">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // Gift cards data
+      const giftCards = [
+        {
+          name: 'Amazon',
+          img: 'https://cdn-icons-png.flaticon.com/512/732/732200.png',
+          bg: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://app.glitchy.com/sign-up'
+        },
+        {
+          name: 'iTunes',
+          img: 'https://cdn-icons-png.flaticon.com/512/732/732206.png',
+          bg: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/itunes-offer'
+        },
+        {
+          name: 'Roblox',
+          img: 'https://cdn-icons-png.flaticon.com/512/732/732221.png',
+          bg: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/roblox-offer'
+        },
+        {
+          name: 'Xbox',
+          img: 'https://cdn-icons-png.flaticon.com/512/732/732219.png',
+          bg: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/xbox-offer'
+        },
+        {
+          name: 'PlayStation',
+          img: 'https://cdn-icons-png.flaticon.com/512/732/732222.png',
+          bg: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/playstation-offer'
+        },
+        {
+          name: 'Google Play',
+          img: 'https://cdn-icons-png.flaticon.com/512/888/888857.png',
+          bg: 'https://images.unsplash.com/photo-1470115636492-6d2b56cbb36d?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/googleplay-offer'
+        },
+        {
+          name: 'Walmart',
+          img: 'https://cdn-icons-png.flaticon.com/512/888/888879.png',
+          bg: 'https://images.unsplash.com/photo-1486308510493-cb94b3e2f056?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/walmart-offer'
+        },
+        {
+          name: 'Best Buy',
+          img: 'https://cdn-icons-png.flaticon.com/512/888/888857.png',
+          bg: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?auto=format&fit=crop&w=600&q=60',
+          offerLink: 'https://example.com/bestbuy-offer'
+        }
+      ];
+
+      // Amounts options
+      const amounts = [50, 100, 150, 200, 250, 300];
+
+      // Elements
+      const cardsContainer = document.getElementById('cards-container');
+      const popup = document.getElementById('amounts-popup');
+      const amountButtonsContainer = document.getElementById('amount-buttons');
+      const claimBtn = document.getElementById('claim-btn');
+      const closeBtn = document.getElementById('close-btn');
+      const generatedCodeEl = document.getElementById('generated-code');
+
+      let selectedCard = null;
+      let selectedAmount = null;
+
+      // Render cards
+      function renderCards() {
+        giftCards.forEach((card, i) => {
+          const btn = document.createElement('button');
+          btn.classList.add('card');
+          btn.setAttribute('aria-label', `Select ${card.name} gift card`);
+          btn.style.setProperty('--bg-url', `url(${card.bg})`);
+          // set background via ::before using style attribute:
+          btn.style.position = 'relative';
+
+          btn.style.backgroundColor = '#222';
+          btn.style.backgroundImage = `url(${card.bg})`;
+          btn.style.backgroundSize = 'cover';
+          btn.style.backgroundPosition = 'center center';
+
+          btn.innerHTML = `
+            <div class="card-content">
+              <img src="${card.img}" alt="${card.name} logo" loading="lazy" />
+              <h3>${card.name}</h3>
+              <p>Select to choose your gift card</p>
+            </div>
+          `;
+
+          btn.addEventListener('click', () => openPopup(card));
+          cardsContainer.appendChild(btn);
+        });
+      }
+
+      // Open amounts popup
+      function openPopup(card) {
+        selectedCard = card;
+        selectedAmount = null;
+        claimBtn.disabled = true;
+        generatedCodeEl.style.display = 'none';
+        generatedCodeEl.textContent = '';
+
+        // Clear previous amount buttons
+        amountButtonsContainer.innerHTML = '';
+
+        // Create amount buttons
+        amounts.forEach(amount => {
+          const btn = document.createElement('button');
+          btn.classList.add('amount-btn');
+          btn.textContent = `$${amount}`;
+          btn.addEventListener('click', () => {
+            selectedAmount = amount;
+            claimBtn.disabled = false;
+            // Highlight selected amount button
+            [...amountButtonsContainer.children].forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            generatedCodeEl.style.display = 'none';
+            generatedCodeEl.textContent = '';
+          });
+          amountButtonsContainer.appendChild(btn);
+        });
+
+        popup.querySelector('#popup-title').textContent = `Select Amount for ${card.name}`;
+        popup.classList.add('active');
+        popup.focus();
+      }
+
+      // Generate fake gift code
+      function generateCode() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let code = '';
+        for (let i = 0; i < 16; i++) {
+          if (i > 0 && i % 4 === 0) code += '-';
+          code += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return code;
+      }
+
+      // Claim button click
+      claimBtn.addEventListener('click', () => {
+        if (!selectedCard || !selectedAmount) return;
+        // Show generated code with blur effect first
+        generatedCodeEl.textContent = generateCode();
+        generatedCodeEl.style.display = 'block';
+        generatedCodeEl.classList.remove('revealed');
+
+        setTimeout(() => {
+          generatedCodeEl.classList.add('revealed');
+        }, 600);
+
+        // After 3 seconds redirect to offer link
+        setTimeout(() => {
+          window.location.href = selectedCard.offerLink;
+        }, 3000);
+      });
+
+      // Close popup
+      closeBtn.addEventListener('click', () => {
+        popup.classList.remove('active');
+      });
+
+      // Close on outside click
+      popup.addEventListener('click', (e) => {
+        if (e.target === popup) {
+          popup.classList.remove('active');
+        }
+      });
+
+      // Close on ESC key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && popup.classList.contains('active')) {
+          popup.classList.remove('active');
+        }
+      });
+
+      // Initialize page
+      renderCards();
+
+    })();
+  </script>
+
+</body>
+</html>
